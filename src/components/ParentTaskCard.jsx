@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { formatSeconds } from "../state/taskHelpers";
 
-export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSetUrgent }) {
+export default function ParentTaskCard({
+  task,
+  currency = "$",
+  onDelete,
+  onReset,
+  onPatch,
+  onSetUrgent,
+}) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(task.name);
   const [editReward, setEditReward] = useState(String(task.reward));
   const [editMinutes, setEditMinutes] = useState(String(task.timerMinutes));
 
-  let cardBorder = "border border-slate-200";
+  let cardBorder = "border border-slate-200 dark:border-slate-700";
   if (task.urgent) cardBorder = "border-2 border-red-500";
 
   function handleEditOpen() {
@@ -30,14 +37,14 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
     setEditing(false);
   }
 
-  let timerColor = "text-slate-600";
-  if (task.expired) timerColor = "text-red-600";
-  else if (task.timerRunning) timerColor = "text-green-600";
+  let timerColor = "text-slate-600 dark:text-slate-300";
+  if (task.expired) timerColor = "text-red-600 dark:text-red-400";
+  else if (task.timerRunning) timerColor = "text-green-600 dark:text-green-400";
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden ${cardBorder}`}>
+    <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden ${cardBorder}`}>
       {task.expired && (
-        <div className="bg-red-100 px-4 py-2 text-red-700 font-medium text-sm">
+        <div className="bg-red-100 dark:bg-red-900 px-4 py-2 text-red-700 dark:text-red-300 font-medium text-sm">
           ⏰ Time&apos;s up!
         </div>
       )}
@@ -50,31 +57,33 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
               placeholder="Task name"
               autoFocus
             />
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-xs text-slate-500 mb-1 block">Reward ($)</label>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
+                  Reward ({currency})
+                </label>
                 <input
                   type="number"
                   value={editReward}
                   onChange={(e) => setEditReward(e.target.value)}
                   min="0"
                   step="0.25"
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
               <div className="flex-1">
-                <label className="text-xs text-slate-500 mb-1 block">Timer (min)</label>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Timer (min)</label>
                 <input
                   type="number"
                   value={editMinutes}
                   onChange={(e) => setEditMinutes(e.target.value)}
                   min="1"
                   max="60"
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
             </div>
@@ -87,7 +96,7 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="bg-slate-100 text-slate-700 rounded-xl px-5 py-2 text-sm font-medium transition hover:bg-slate-200"
+                className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-5 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-slate-600"
               >
                 Cancel
               </button>
@@ -98,19 +107,19 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
           <>
             {/* Header row */}
             <div className="flex items-center gap-2">
-              <span className="font-semibold flex-1">{task.name}</span>
+              <span className="font-semibold flex-1 text-slate-800 dark:text-slate-100">{task.name}</span>
               {task.urgent && (
-                <span className="bg-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full">
+                <span className="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded-full">
                   Urgent
                 </span>
               )}
-              <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-xl ml-auto shrink-0">
-                ${Number(task.reward).toFixed(2)}
+              <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-bold px-3 py-1 rounded-xl ml-auto shrink-0">
+                {currency}{Number(task.reward).toFixed(2)}
               </span>
             </div>
 
             {/* Timer display */}
-            <div className="bg-slate-100 rounded-xl px-4 py-3">
+            <div className="bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3">
               <span className={`font-mono text-xl font-bold ${timerColor}`}>
                 {formatSeconds(task.timerSeconds)}
               </span>
@@ -129,13 +138,13 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleEditOpen}
-                className="bg-slate-100 text-slate-700 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-slate-200"
+                className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-slate-200 dark:hover:bg-slate-600"
               >
                 Edit
               </button>
               <button
                 onClick={onReset}
-                className="bg-slate-100 text-slate-700 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-slate-200"
+                className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-slate-200 dark:hover:bg-slate-600"
               >
                 Reset
               </button>
@@ -143,15 +152,15 @@ export default function ParentTaskCard({ task, onDelete, onReset, onPatch, onSet
                 onClick={() => onSetUrgent(!task.urgent)}
                 className={`text-sm font-medium px-3 py-1.5 rounded-xl transition ${
                   task.urgent
-                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800"
+                    : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600"
                 }`}
               >
                 {task.urgent ? "Unmark Urgent" : "Mark Urgent"}
               </button>
               <button
                 onClick={onDelete}
-                className="bg-red-100 text-red-700 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-red-200 ml-auto"
+                className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-sm font-medium px-3 py-1.5 rounded-xl transition hover:bg-red-200 dark:hover:bg-red-800 ml-auto"
               >
                 Delete
               </button>

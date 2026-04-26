@@ -15,7 +15,9 @@ import CompletedTaskCard from "./CompletedTaskCard";
 export default function ParentApp({
   kids,
   activeKid,
+  settings,
   onLogout,
+  onOpenSettings,
   onSelectKid,
   onAddKid,
   onRemoveKid,
@@ -30,11 +32,16 @@ export default function ParentApp({
   onPatchTask,
   onSetUrgent,
 }) {
+  const currency = settings?.currency || "$";
+  const defaultTimerMinutes = settings?.defaultTimerMinutes ?? 5;
+  const defaultReward = settings?.defaultReward ?? 1;
+  const showCompleted = settings?.showCompletedTasks !== false;
+
   const [newKidName, setNewKidName] = useState("");
   const [moneyAmount, setMoneyAmount] = useState("");
   const [taskName, setTaskName] = useState("");
-  const [taskReward, setTaskReward] = useState("");
-  const [taskMinutes, setTaskMinutes] = useState("");
+  const [taskReward, setTaskReward] = useState(String(defaultReward));
+  const [taskMinutes, setTaskMinutes] = useState(String(defaultTimerMinutes));
 
   const now = Date.now();
 
@@ -64,32 +71,41 @@ export default function ParentApp({
     onAddTask(activeKid.id, {
       name,
       reward: Number(taskReward) || 0,
-      timerMinutes: Number(taskMinutes) || 5,
+      timerMinutes: Number(taskMinutes) || defaultTimerMinutes,
     });
     setTaskName("");
-    setTaskReward("");
-    setTaskMinutes("");
+    setTaskReward(String(defaultReward));
+    setTaskMinutes(String(defaultTimerMinutes));
   }
 
   // Empty state — no kids at all
   if (kids.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-100">
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
         <div className="max-w-5xl mx-auto p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">StartNow</h1>
-              <p className="text-slate-500 text-sm">Parent view</p>
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">StartNow</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">Parent view</p>
             </div>
-            <button
-              onClick={onLogout}
-              className="border border-slate-300 text-slate-700 rounded-xl px-4 py-2 text-sm font-medium transition hover:bg-slate-200"
-            >
-              Log out
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onOpenSettings}
+                aria-label="Open settings"
+                className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
+                <span aria-hidden="true">⚙</span>
+              </button>
+              <button
+                onClick={onLogout}
+                className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl px-4 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
+                Log out
+              </button>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
-            <p className="text-slate-500 text-sm">No kids added yet. Add one to get started.</p>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 space-y-3">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">No kids added yet. Add one to get started.</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -97,7 +113,7 @@ export default function ParentApp({
                 value={newKidName}
                 onChange={(e) => setNewKidName(e.target.value)}
                 onKeyDown={handleAddKidKeyDown}
-                className="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                className="flex-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
               />
               <button
                 onClick={handleAddKid}
@@ -126,24 +142,33 @@ export default function ParentApp({
   const hasAnyTasks = allTasks.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
       <div className="max-w-5xl mx-auto p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">StartNow</h1>
-            <p className="text-slate-500 text-sm">Parent view</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">StartNow</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Parent view</p>
           </div>
-          <button
-            onClick={onLogout}
-            className="border border-slate-300 text-slate-700 rounded-xl px-4 py-2 text-sm font-medium transition hover:bg-slate-200"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenSettings}
+              aria-label="Open settings"
+              className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-slate-700"
+            >
+              <span aria-hidden="true">⚙</span>
+            </button>
+            <button
+              onClick={onLogout}
+              className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl px-4 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-slate-700"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Kid tabs */}
-        <div className="bg-white rounded-2xl p-3 flex flex-wrap items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 flex flex-wrap items-center gap-2">
           {kids.map((kid) => (
             <div key={kid.id} className="flex items-center gap-1">
               <button
@@ -151,7 +176,7 @@ export default function ParentApp({
                 className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                   activeKid && activeKid.id === kid.id
                     ? "bg-black text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600"
                 }`}
               >
                 {kid.name}
@@ -162,7 +187,7 @@ export default function ParentApp({
                     onRemoveKid(kid.id);
                   }
                 }}
-                className="text-slate-400 hover:text-red-500 text-xs px-1 transition"
+                className="text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 text-xs px-1 transition"
                 aria-label={`Remove ${kid.name}`}
               >
                 ✕
@@ -176,7 +201,7 @@ export default function ParentApp({
               value={newKidName}
               onChange={(e) => setNewKidName(e.target.value)}
               onKeyDown={handleAddKidKeyDown}
-              className="border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 w-32"
+              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 w-32"
             />
             <button
               onClick={handleAddKid}
@@ -192,14 +217,14 @@ export default function ParentApp({
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard label="Done Today" value={doneTodayCount} />
-              <StatCard label="Wallet" value={`$${balance.toFixed(2)}`} />
-              <StatCard label="Earned Today" value={`$${todayEarned.toFixed(2)}`} />
+              <StatCard label="Wallet" value={`${currency}${balance.toFixed(2)}`} />
+              <StatCard label="Earned Today" value={`${currency}${todayEarned.toFixed(2)}`} />
               <StatCard label="Pending" value={pendingCount} />
             </div>
 
             {/* Add Money */}
-            <div className="bg-white rounded-2xl shadow-sm p-4">
-              <h3 className="font-semibold text-slate-700 mb-3">Add Money</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4">
+              <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Add Money</h3>
               <form onSubmit={handleAddMoney} className="flex gap-2">
                 <input
                   type="number"
@@ -208,7 +233,7 @@ export default function ParentApp({
                   step="0.25"
                   value={moneyAmount}
                   onChange={(e) => setMoneyAmount(e.target.value)}
-                  className="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="flex-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
                 <button
                   type="submit"
@@ -220,19 +245,21 @@ export default function ParentApp({
             </div>
 
             {/* Assign Task */}
-            <div className="bg-white rounded-2xl shadow-sm p-4">
-              <h3 className="font-semibold text-slate-700 mb-3">Assign Task</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4">
+              <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Assign Task</h3>
               <form onSubmit={handleAddTask} className="space-y-3">
                 <input
                   type="text"
                   placeholder="Task name"
                   value={taskName}
                   onChange={(e) => setTaskName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-xs text-slate-500 mb-1 block">Reward ($)</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
+                      Reward ({currency})
+                    </label>
                     <input
                       type="number"
                       placeholder="0.00"
@@ -240,11 +267,11 @@ export default function ParentApp({
                       step="0.25"
                       value={taskReward}
                       onChange={(e) => setTaskReward(e.target.value)}
-                      className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-slate-500 mb-1 block">Timer (min)</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Timer (min)</label>
                     <input
                       type="number"
                       placeholder="5"
@@ -252,7 +279,7 @@ export default function ParentApp({
                       max="60"
                       value={taskMinutes}
                       onChange={(e) => setTaskMinutes(e.target.value)}
-                      className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -268,13 +295,14 @@ export default function ParentApp({
             {/* Kid Proposals */}
             {proposedTasks.length > 0 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-slate-600 text-sm uppercase tracking-wide px-1">
+                <h2 className="font-semibold text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wide px-1">
                   Kid Proposals
                 </h2>
                 {proposedTasks.map((task) => (
                   <ParentProposalCard
                     key={task.id}
                     task={task}
+                    currency={currency}
                     onApprove={() => onApproveProposal(activeKid.id, task.id)}
                     onReject={() => onRejectProposal(activeKid.id, task.id)}
                   />
@@ -285,13 +313,14 @@ export default function ParentApp({
             {/* Completed — Pending Approval */}
             {pendingTasks.length > 0 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-slate-600 text-sm uppercase tracking-wide px-1">
+                <h2 className="font-semibold text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wide px-1">
                   Completed — Pending Approval
                 </h2>
                 {pendingTasks.map((task) => (
                   <ParentPendingCard
                     key={task.id}
                     task={task}
+                    currency={currency}
                     onApprove={() => onApproveCompletion(activeKid.id, task.id)}
                     onSendBack={() => onSendBack(activeKid.id, task.id)}
                   />
@@ -302,13 +331,14 @@ export default function ParentApp({
             {/* Active Tasks */}
             {activeTasks.length > 0 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-slate-600 text-sm uppercase tracking-wide px-1">
+                <h2 className="font-semibold text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wide px-1">
                   Active Tasks
                 </h2>
                 {activeTasks.map((task) => (
                   <ParentTaskCard
                     key={task.id}
                     task={task}
+                    currency={currency}
                     onDelete={() => onDeleteTask(activeKid.id, task.id)}
                     onReset={() => onResetTask(activeKid.id, task.id)}
                     onPatch={(changes) => onPatchTask(activeKid.id, task.id, changes)}
@@ -319,20 +349,20 @@ export default function ParentApp({
             )}
 
             {/* Completed */}
-            {completedTasks.length > 0 && (
+            {showCompleted && completedTasks.length > 0 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-slate-600 text-sm uppercase tracking-wide px-1">
+                <h2 className="font-semibold text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wide px-1">
                   Completed
                 </h2>
                 {completedTasks.map((task) => (
-                  <CompletedTaskCard key={task.id} task={task} now={now} />
+                  <CompletedTaskCard key={task.id} task={task} now={now} currency={currency} />
                 ))}
               </div>
             )}
 
             {/* Empty state */}
             {!hasAnyTasks && (
-              <div className="bg-white rounded-2xl shadow-sm p-8 text-center text-slate-400">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-8 text-center text-slate-400 dark:text-slate-500">
                 <p className="text-lg">No tasks for {activeKid.name} yet.</p>
                 <p className="text-sm mt-1">Use the form above to assign a task.</p>
               </div>

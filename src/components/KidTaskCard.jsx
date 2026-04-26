@@ -1,7 +1,15 @@
 import { useRef } from "react";
 import { formatSeconds } from "../state/taskHelpers";
 
-export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClearPhoto, onMarkComplete }) {
+export default function KidTaskCard({
+  task,
+  currency = "$",
+  onStart,
+  onStop,
+  onSetPhoto,
+  onClearPhoto,
+  onMarkComplete,
+}) {
   const fileInputRef = useRef(null);
 
   const isApproved = task.status === "approved";
@@ -11,7 +19,7 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
   const canStart = isApproved && !task.timerRunning && !task.expired;
   const canMarkComplete = isApproved && task.photo && !task.timerRunning;
 
-  let cardBorder = "border border-slate-200";
+  let cardBorder = "border border-slate-200 dark:border-slate-700";
   if (task.urgent) cardBorder = "border-2 border-red-500";
   if (isPending) cardBorder = "border-2 border-blue-400";
 
@@ -26,14 +34,14 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
     e.target.value = "";
   }
 
-  let timerColor = "text-slate-600";
-  if (task.expired) timerColor = "text-red-600";
-  else if (task.timerRunning) timerColor = "text-green-600";
+  let timerColor = "text-slate-600 dark:text-slate-300";
+  if (task.expired) timerColor = "text-red-600 dark:text-red-400";
+  else if (task.timerRunning) timerColor = "text-green-600 dark:text-green-400";
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden ${cardBorder}`}>
+    <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden ${cardBorder}`}>
       {task.expired && (
-        <div className="bg-red-100 px-4 py-2 text-red-700 font-medium text-sm">
+        <div className="bg-red-100 dark:bg-red-900 px-4 py-2 text-red-700 dark:text-red-300 font-medium text-sm">
           ⏰ Time&apos;s up!
         </div>
       )}
@@ -41,30 +49,30 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
       <div className="p-4 space-y-3">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <span className="font-semibold flex-1">{task.name}</span>
+          <span className="font-semibold flex-1 text-slate-800 dark:text-slate-100">{task.name}</span>
           {task.urgent && (
-            <span className="bg-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full">
+            <span className="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded-full">
               Urgent
             </span>
           )}
           {isProposed && (
-            <span className="bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full">
+            <span className="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs font-medium px-2 py-0.5 rounded-full">
               Waiting approval
             </span>
           )}
           {isPending && (
-            <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">
+            <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
               Awaiting parent
             </span>
           )}
-          <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-xl ml-auto shrink-0">
-            ${Number(task.reward).toFixed(2)}
+          <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-bold px-3 py-1 rounded-xl ml-auto shrink-0">
+            {currency}{Number(task.reward).toFixed(2)}
           </span>
         </div>
 
         {/* Timer row — only for approved tasks */}
         {isApproved && (
-          <div className="bg-slate-100 rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 flex items-center gap-3">
             <span className={`font-mono text-xl font-bold flex-1 ${timerColor}`}>
               {formatSeconds(task.timerSeconds)}
             </span>
@@ -79,7 +87,7 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
             {task.timerRunning && (
               <button
                 onClick={onStop}
-                className="bg-slate-200 text-slate-700 text-sm font-medium px-4 py-1.5 rounded-xl transition hover:bg-slate-300"
+                className="bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium px-4 py-1.5 rounded-xl transition hover:bg-slate-300 dark:hover:bg-slate-500"
               >
                 Pause
               </button>
@@ -99,7 +107,7 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
                 />
                 <button
                   onClick={onClearPhoto}
-                  className="absolute top-2 right-2 bg-white text-slate-700 text-xs font-medium px-2 py-1 rounded-lg shadow transition hover:bg-slate-100"
+                  className="absolute top-2 right-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium px-2 py-1 rounded-lg shadow transition hover:bg-slate-100 dark:hover:bg-slate-600"
                 >
                   Clear
                 </button>
@@ -107,7 +115,7 @@ export default function KidTaskCard({ task, onStart, onStop, onSetPhoto, onClear
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-slate-300 rounded-xl py-4 text-slate-500 text-sm transition hover:border-slate-400 hover:bg-slate-50"
+                className="w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-4 text-slate-500 dark:text-slate-400 text-sm transition hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 📷 Upload proof photo
               </button>

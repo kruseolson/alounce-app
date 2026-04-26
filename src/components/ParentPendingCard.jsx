@@ -1,13 +1,13 @@
-export default function ParentPendingCard({ task, onApprove, onSendBack }) {
+export default function ParentPendingCard({ task, currency = "$", onApprove, onSendBack }) {
   return (
-    <div className="bg-white rounded-2xl p-4 border-2 border-blue-400 space-y-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border-2 border-blue-400 space-y-3">
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate">{task.name}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Kid marked this complete</p>
+          <p className="font-semibold truncate text-slate-800 dark:text-slate-100">{task.name}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kid marked this complete</p>
         </div>
-        <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-xl shrink-0">
-          ${Number(task.reward).toFixed(2)}
+        <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-bold px-3 py-1 rounded-xl shrink-0">
+          {currency}{Number(task.reward).toFixed(2)}
         </span>
       </div>
 
@@ -28,7 +28,7 @@ export default function ParentPendingCard({ task, onApprove, onSendBack }) {
         </button>
         <button
           onClick={onSendBack}
-          className="flex-1 bg-yellow-100 text-yellow-700 text-sm font-medium py-2 rounded-xl transition hover:bg-yellow-200"
+          className="flex-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-sm font-medium py-2 rounded-xl transition hover:bg-yellow-200 dark:hover:bg-yellow-800"
         >
           Send Back
         </button>
