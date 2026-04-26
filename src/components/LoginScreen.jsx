@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function LoginScreen({ kids, onLoginKid, onLoginParent, onAddKid }) {
+export default function LoginScreen({ kids, onLoginKid, onLoginParent, onAddKid, onOpenSettings }) {
   const [newKidName, setNewKidName] = useState("");
 
   function handleAddKid() {
@@ -16,7 +16,16 @@ export default function LoginScreen({ kids, onLoginKid, onLoginParent, onAddKid 
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 w-full max-w-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 w-full max-w-sm relative">
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            aria-label="Open settings"
+            className="absolute top-3 right-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 text-xl leading-none w-9 h-9 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center"
+          >
+            <span aria-hidden="true">⚙</span>
+          </button>
+        )}
         <h1 className="text-3xl font-bold text-center mb-1 text-slate-800 dark:text-slate-100">StartNow</h1>
         <p className="text-slate-500 dark:text-slate-400 text-center mb-6">Who&apos;s using the app?</p>
 

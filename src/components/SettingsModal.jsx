@@ -46,6 +46,7 @@ export default function SettingsModal({
   open,
   onClose,
   settings,
+  scopeLabel,
   onUpdateSettings,
   onExportData,
   onImportData,
@@ -137,7 +138,16 @@ export default function SettingsModal({
       >
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-slate-800 flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Settings</h2>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Settings</h2>
+            {scopeLabel && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {scopeLabel === "Defaults"
+                  ? "Editing defaults for new kids"
+                  : `Editing for: ${scopeLabel}`}
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             aria-label="Close settings"

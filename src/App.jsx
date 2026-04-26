@@ -23,14 +23,37 @@ const DEFAULT_SETTINGS = {
 };
 
 const DEFAULT_STATE = {
-  version: 2,
+  version: 3,
   kids: [],
   selectedKidId: null,
   session: { role: null, kidId: null },
   nextId: 1,
   beepCounter: 0,
-  settings: { ...DEFAULT_SETTINGS },
+  parentSettings: { ...DEFAULT_SETTINGS },
+  defaultSettings: { ...DEFAULT_SETTINGS },
 };
+
+function getSettingsForSession(state) {
+  const { session, kids, parentSettings, defaultSettings } = state;
+  if (session?.role === "parent") {
+    return { ...DEFAULT_SETTINGS, ...(parentSettings || {}) };
+  }
+  if (session?.role === "kid") {
+    const kid = kids.find((k) => k.id === session.kidId);
+    return { ...DEFAULT_SETTINGS, ...(kid?.settings || defaultSettings || {}) };
+  }
+  return { ...DEFAULT_SETTINGS, ...(defaultSettings || {}) };
+}
+
+function getScopeLabel(state) {
+  const { session, kids } = state;
+  if (session?.role === "parent") return "Parent";
+  if (session?.role === "kid") {
+    const kid = kids.find((k) => k.id === session.kidId);
+    return kid ? kid.name : "Kid";
+  }
+  return "Defaults";
+}
 
 function updateKidTask(kids, kidId, taskId, updater) {
   return kids.map((kid) => {
@@ -53,10 +76,11 @@ function removeKidTask(kids, kidId, taskId) {
 }
 
 export default function App() {
-  const [state, setState] = usePersistedState("startnow.v1", 2, DEFAULT_STATE);
+  const [state, setState] = usePersistedState("startnow.v1", 3, DEFAULT_STATE);
 
-  // Defensive: ensure settings always present and merged with new defaults
-  const settings = { ...DEFAULT_SETTINGS, ...(state.settings || {}) };
+  // Settings derived from current session (per-profile)
+  const settings = getSettingsForSession(state);
+  const scopeLabel = getScopeLabel(state);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -109,15 +133,16 @@ export default function App() {
         }));
         if (beeped) {
           // schedule side-effects after state update — vibration, notification
+          const sessionSettings = getSettingsForSession(prev);
           queueMicrotask(() => {
             try {
-              if ((prev.settings || DEFAULT_SETTINGS).vibrationEnabled && navigator.vibrate) {
+              if (sessionSettings.vibrationEnabled && navigator.vibrate) {
                 navigator.vibrate([200, 100, 200, 100, 200]);
               }
             } catch (_) {}
             try {
               if (
-                (prev.settings || DEFAULT_SETTINGS).notificationsEnabled &&
+                sessionSettings.notificationsEnabled &&
                 typeof Notification !== "undefined" &&
                 Notification.permission === "granted"
               ) {
@@ -192,12 +217,46 @@ export default function App() {
     }
   }, [state.kids, settings.tabTitleFlash]);
 
-  // --- Settings ---
+  // --- Settings (per-profile) ---
   const updateSettings = useCallback((partial) => {
-    setState((prev) => ({
-      ...prev,
-      settings: { ...DEFAULT_SETTINGS, ...(prev.settings || {}), ...partial },
-    }));
+    setState((prev) => {
+      const role = prev.session?.role;
+      if (role === "parent") {
+        return {
+          ...prev,
+          parentSettings: {
+            ...DEFAULT_SETTINGS,
+            ...(prev.parentSettings || {}),
+            ...partial,
+          },
+        };
+      }
+      if (role === "kid") {
+        return {
+          ...prev,
+          kids: prev.kids.map((k) => {
+            if (k.id !== prev.session.kidId) return k;
+            return {
+              ...k,
+              settings: {
+                ...DEFAULT_SETTINGS,
+                ...(k.settings || prev.defaultSettings || {}),
+                ...partial,
+              },
+            };
+          }),
+        };
+      }
+      // No session → editing the household defaults (template for new kids)
+      return {
+        ...prev,
+        defaultSettings: {
+          ...DEFAULT_SETTINGS,
+          ...(prev.defaultSettings || {}),
+          ...partial,
+        },
+      };
+    });
   }, [setState]);
 
   // --- Data: export / import / clear ---
@@ -224,12 +283,29 @@ export default function App() {
 
   const importData = useCallback((parsed) => {
     setState(() => {
+      // Accept legacy v2 backups (top-level `settings`) or v3+ shape
+      const legacy = parsed && parsed.settings ? parsed.settings : null;
       const merged = {
         ...DEFAULT_STATE,
         ...parsed,
-        settings: { ...DEFAULT_SETTINGS, ...((parsed && parsed.settings) || {}) },
+        parentSettings: {
+          ...DEFAULT_SETTINGS,
+          ...(parsed?.parentSettings || legacy || {}),
+        },
+        defaultSettings: {
+          ...DEFAULT_SETTINGS,
+          ...(parsed?.defaultSettings || legacy || {}),
+        },
+        kids: (parsed?.kids || []).map((k) => ({
+          ...k,
+          settings: {
+            ...DEFAULT_SETTINGS,
+            ...(k.settings || parsed?.defaultSettings || legacy || {}),
+          },
+        })),
         session: { role: null, kidId: null },
       };
+      delete merged.settings;
       return merged;
     });
   }, [setState]);
@@ -264,7 +340,16 @@ export default function App() {
   const addKid = useCallback((name) => {
     setState((prev) => {
       const id = prev.nextId;
-      const newKid = { id, name: name.trim(), balance: 0, tasks: [] };
+      const newKid = {
+        id,
+        name: name.trim(),
+        balance: 0,
+        tasks: [],
+        settings: {
+          ...DEFAULT_SETTINGS,
+          ...(prev.defaultSettings || {}),
+        },
+      };
       return {
         ...prev,
         kids: [...prev.kids, newKid],
@@ -496,6 +581,7 @@ export default function App() {
       open={settingsOpen}
       onClose={closeSettings}
       settings={settings}
+      scopeLabel={scopeLabel}
       onUpdateSettings={updateSettings}
       onExportData={exportData}
       onImportData={importData}
@@ -511,6 +597,7 @@ export default function App() {
           onLoginKid={(kidId) => login("kid", kidId)}
           onLoginParent={() => login("parent")}
           onAddKid={addKid}
+          onOpenSettings={openSettings}
         />
         {settingsModal}
       </>
